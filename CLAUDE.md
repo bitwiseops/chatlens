@@ -30,6 +30,31 @@ statistiche deterministiche, temi/riassunti, andamento emotivo/relazionale, stil
 media), `is_media` (bool), `n_chars` (int), `n_words` (int), `n_emoji` (int), `date` (date),
 `hour` (int), `weekday` (str).
 
+## Setup su nuova macchina (Linux) — bootstrap per Claude
+Il repo NON contiene dati di chat (`data/` è gitignored): dopo il clone vanno ricopiati.
+```bash
+# 1. uv (se assente)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 2. dipendenze del progetto
+uv sync
+
+# 3. Ollama su Linux + modelli
+curl -fsSL https://ollama.com/install.sh | sh
+ollama serve &                       # oppure: systemctl start ollama
+ollama pull qwen2.5:7b-instruct
+ollama pull nomic-embed-text
+
+# 4. copia l'export WhatsApp (.txt o .zip) in data/raw/  <-- NON è nel repo
+#    (se è uno .zip, estrai il .txt: unzip -j export.zip '*.txt' -d data/raw/)
+
+# 5. esegui (vedi anche la sezione CLI)
+uv run pytest          # test deterministici (no Ollama)
+uv run chatlens all    # pipeline completa
+```
+Nota termica: su GPU che scaldano, in `config.yaml` usa `windows.mode: monthly` e alza
+`llm.cooldown_s` (es. 8). I passi deterministici (`parse`, `stats`, `report`) non usano la GPU.
+
 ## Ambiente: uv
 Questo progetto usa **uv** (no pip/venv manuale, no requirements.txt).
 ```bash
