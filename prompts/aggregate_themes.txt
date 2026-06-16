@@ -1,0 +1,22 @@
+Sei un analista di conversazioni. Di seguito trovi i temi e i riassunti estratti finestra
+per finestra da una chat a due, in ordine cronologico (formato JSON).
+
+Il tuo compito (fase di reduce):
+1. Raggruppa i temi simili sotto un'unica etichetta in italiano.
+2. Conta in quante finestre compare ciascun tema ricorrente.
+3. Indica un trend qualitativo: "in crescita", "in calo", "stabile" o "sporadico".
+4. Scrivi una panoramica complessiva di 4-6 frasi, neutra e fattuale.
+
+Considera ricorrente un tema presente in almeno 2 finestre. Non inventare temi non presenti.
+
+Rispondi ESCLUSIVAMENTE con un oggetto JSON valido in questo formato:
+{
+  "temi_ricorrenti": [
+    {"tema": "...", "occorrenze": 0, "trend": "stabile"}
+  ],
+  "panoramica": "..."
+}
+
+--- DATI PER FINESTRA (JSON) ---
+<<FINESTRE>>
+--- FINE DATI ---

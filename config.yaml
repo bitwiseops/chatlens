@@ -1,0 +1,39 @@
+# chatlens — configurazione centrale (single source of truth)
+# Tutto è locale: l'unico endpoint di rete ammesso è Ollama su localhost.
+
+lingua: it  # le analisi LLM vengono prodotte in italiano
+
+ollama:
+  host: "http://localhost:11434"
+  # Modello di chat di default: sta in 8 GB VRAM (RTX 3060 Ti) quantizzato.
+  # Alternative valide: "llama3.1:8b", "gemma2:9b".
+  # "qwen2.5:14b" funziona con offload parziale ma è più lento.
+  chat_model: "qwen2.5:7b-instruct"
+  # Modello di embedding (per RAG futuro).
+  embed_model: "nomic-embed-text"
+  temperature: 0.15        # bassa per riproducibilità
+  timeout_s: 120
+  max_retries: 3
+
+# Segmentazione della cronologia per il map-reduce semantico.
+windows:
+  mode: "weekly"           # weekly | daily | session
+  session_gap_minutes: 360 # gap che separa due sessioni (anche per "chi inizia")
+
+# Limiti per non saturare il context dell'LLM (map-reduce su finestre).
+# Tenuti contenuti: chat molto fitte producono finestre grandi; transcript troppo lunghi
+# rallentano il modello e rischiano timeout. Con questi valori ogni finestra è veloce (~5s).
+llm:
+  max_messages_per_window: 160  # se una finestra supera, si tiene testa+coda
+  max_chars_per_message: 400
+
+paths:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  messages_parquet: "data/processed/messaggi.parquet"
+  stats_json: "data/processed/stats.json"
+  themes_json: "data/processed/temi.json"
+  sentiment_csv: "data/processed/sentiment.csv"
+  comm_style_json: "data/processed/comm_style.json"
+  report_md: "data/processed/report.md"
+  figures_dir: "data/processed/figures"
