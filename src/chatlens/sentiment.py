@@ -6,6 +6,7 @@ vengono aggregati in una serie storica (CSV) plottata poi da report.py.
 
 from __future__ import annotations
 
+import time
 from pathlib import Path
 
 import pandas as pd
@@ -43,8 +44,10 @@ def analyze_sentiment(
     cfg = cfg or load_config()
     client = client or OllamaClient(cfg)
 
+    cooldown = float(cfg["llm"].get("cooldown_s", 0))
+    windows = make_windows(df, cfg=cfg)
     rows = []
-    for w in make_windows(df, cfg=cfg):
+    for i, w in enumerate(windows):
         transcript = render_transcript(w, cfg)
         if not transcript.strip():
             continue
@@ -57,6 +60,8 @@ def analyze_sentiment(
             {"finestra": w.label, "inizio": w.start, "fine": w.end,
              "n_messaggi": len(w.df), **res}
         )
+        if cooldown and i < len(windows) - 1:
+            time.sleep(cooldown)  # pausa di raffreddamento GPU
 
     return pd.DataFrame(rows)
 

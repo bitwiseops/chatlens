@@ -39,7 +39,9 @@ def make_windows(
     if df.empty:
         return []
 
-    if mode == "weekly":
+    if mode == "monthly":
+        keys = df["timestamp"].dt.to_period("M").astype(str)
+    elif mode == "weekly":
         iso = df["timestamp"].dt.isocalendar()
         keys = iso["year"].astype(str) + "-W" + iso["week"].astype(str).str.zfill(2)
     elif mode == "daily":
@@ -47,7 +49,9 @@ def make_windows(
     elif mode == "session":
         keys = "S" + _session_ids(df, int(cfg["windows"]["session_gap_minutes"])).astype(str)
     else:
-        raise ValueError(f"Modalità finestra sconosciuta: {mode!r} (weekly|daily|session)")
+        raise ValueError(
+            f"Modalità finestra sconosciuta: {mode!r} (monthly|weekly|daily|session)"
+        )
 
     windows: list[Window] = []
     for label, sub in df.groupby(keys, sort=False):

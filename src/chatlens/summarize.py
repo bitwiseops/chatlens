@@ -8,6 +8,7 @@ qui si usa l'LLM solo per la semantica.
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 import pandas as pd
@@ -38,15 +39,18 @@ def summarize(
     cfg = cfg or load_config()
     client = client or OllamaClient(cfg)
 
+    cooldown = float(cfg["llm"].get("cooldown_s", 0))
     windows = make_windows(df, cfg=cfg)
     per_window = []
-    for w in windows:
+    for i, w in enumerate(windows):
         transcript = render_transcript(w, cfg)
         if not transcript.strip():
             continue
         periodo = f"{w.start:%Y-%m-%d} – {w.end:%Y-%m-%d}"
         res = _map_window(client, transcript, periodo)
         per_window.append({"finestra": w.label, "periodo": periodo, **res})
+        if cooldown and i < len(windows) - 1:
+            time.sleep(cooldown)  # pausa di raffreddamento GPU
 
     # Reduce
     reduce_prompt = load_prompt("aggregate_themes.txt").replace(

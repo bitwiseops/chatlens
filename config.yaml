@@ -17,7 +17,7 @@ ollama:
 
 # Segmentazione della cronologia per il map-reduce semantico.
 windows:
-  mode: "weekly"           # weekly | daily | session
+  mode: "monthly"          # monthly | weekly | daily | session
   session_gap_minutes: 360 # gap che separa due sessioni (anche per "chi inizia")
 
 # Limiti per non saturare il context dell'LLM (map-reduce su finestre).
@@ -26,6 +26,9 @@ windows:
 llm:
   max_messages_per_window: 160  # se una finestra supera, si tiene testa+coda
   max_chars_per_message: 400
+  # Pausa di raffreddamento tra una chiamata LLM e l'altra (secondi). Su GPU che
+  # scaldano, alza questo valore (es. 5-10) per non tenere la scheda al 100% in continuo.
+  cooldown_s: 2.0
 
 paths:
   raw_dir: "data/raw"
