@@ -5,7 +5,7 @@ description = "Analisi locale e privata di chat WhatsApp a due (statistiche, tem
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
-    { name = "Flavio Cordari", email = "flavio.cordari@uniroma1.it" }
+    { name = "Flavio Cordari" }
 ]
 dependencies = [
     "pandas>=2.2",
