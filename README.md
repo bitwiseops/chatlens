@@ -1,70 +1,68 @@
 # chatlens
 
-Analisi **interamente locale e privata** di una chat WhatsApp a due persone, esportata in
-`.txt`. Produce statistiche/pattern, riassunti e temi ricorrenti, e l'andamento
-emotivo/relazionale nel tempo — più un modulo esplorativo sullo stile comunicativo.
+**Fully local, private analysis of a two-person WhatsApp chat.** Feed it an exported `.txt` and get statistics and patterns, summaries and recurring themes, and the emotional/relational trend over time, plus an exploratory module on communication style.
 
-> **Privacy prima di tutto.** Nessun dato lascia mai la macchina. L'unica connessione di
-> rete è verso un'istanza **Ollama in locale** (`http://localhost:11434`). La cartella
-> `data/` è ignorata da git: le tue chat non finiscono in nessun commit.
+> **Privacy first.** No data ever leaves your machine. The only network connection is to a **local Ollama** instance (`http://localhost:11434`). The `data/` folder is git-ignored, so your chats never end up in a commit.
 
-## Requisiti
-- Python >= 3.11 e [uv](https://docs.astral.sh/uv/)
-- [Ollama](https://ollama.com) in locale
-- GPU consigliata: RTX 3060 Ti (8 GB VRAM) — il modello di default è quantizzato per starci.
+## Features
+
+- **Deterministic stats** (message counts, response times, who starts conversations) kept strictly separate from the **LLM layer** (semantics), so numbers are never hallucinated
+- **Map-reduce summarisation** of long chats into recurring themes
+- **Sentiment over time** and an exploratory, non-diagnostic **communication-style** analysis
+- **Optional pseudonymisation** before sharing any output
+- Markdown report with charts
+
+## Requirements
+
+- Python ≥ 3.11 and [uv](https://docs.astral.sh/uv/)
+- [Ollama](https://ollama.com) running locally
+- A GPU is recommended: the default model is quantised to fit in 8 GB of VRAM
 
 ## Setup
 
 ```bash
-# 1. dipendenze (uv crea .venv e usa uv.lock)
 uv sync
 
-# 2. avvia Ollama e scarica i modelli (una tantum)
 ollama serve &
-ollama pull qwen2.5:7b-instruct   # modello di chat di default
-ollama pull nomic-embed-text      # embedding (RAG futuro)
+ollama pull qwen2.5:7b-instruct   # default chat model
+ollama pull nomic-embed-text      # embeddings
 ```
 
-Nomi modello, dimensioni delle finestre, percorsi e temperature sono in `config.yaml`.
-Modelli chat alternativi: `llama3.1:8b`, `gemma2:9b`. `qwen2.5:14b` funziona con offload
-parziale, ma è più lento.
+Model names, context windows, paths and temperatures live in [`config.yaml`](config.yaml).
 
-## Esportare la chat da WhatsApp
-Sul telefono: apri la conversazione -> **Altro / tre puntini** -> **Esporta chat** ->
-**Senza media**. Ottieni un file `.txt` (formato iOS o Android). Copialo in `data/raw/`.
+## Usage
 
-## Uso (CLI)
+Export the chat from WhatsApp (*⋮ → Export chat → Without media*) and copy the `.txt` into `data/raw/`.
 
 ```bash
-# pipeline completa
-uv run chatlens all --me "Flavio" --other "NomeAltro"
+# full pipeline
+uv run chatlens all --me "Alice" --other "Bob"
 
-# oppure passo per passo
-uv run chatlens parse      data/raw/chat.txt   # -> messaggi.parquet
-uv run chatlens stats                          # -> stats.json (deterministico)
-uv run chatlens summarize                      # -> temi.json (LLM, map-reduce)
-uv run chatlens sentiment                      # -> sentiment.csv (LLM)
-uv run chatlens comm-style                     # -> comm_style.json (LLM, esplorativo)
-uv run chatlens report                         # -> report.md + grafici
+# or step by step
+uv run chatlens parse data/raw/chat.txt     # -> messages.parquet
+uv run chatlens stats                       # -> stats.json
+uv run chatlens summarize                   # -> themes.json (LLM)
+uv run chatlens sentiment                   # -> sentiment.csv (LLM)
+uv run chatlens comm-style                  # -> comm_style.json (LLM, exploratory)
+uv run chatlens report                      # -> report.md + charts
 ```
 
-Tutti gli output finiscono in `data/processed/` (ignorata da git).
+To replace real names with pseudonyms before sharing results, add `--anonymize` to `parse`.
 
-## Pseudonimizzazione
-Prima di condividere qualunque output, puoi sostituire i nomi reali con pseudonimi:
+## Disclaimer
+
+The communication-style section is exploratory and **not diagnostic**: treat it as a prompt for reflection, not a verdict on a real person.
+
+## Development
 
 ```bash
-uv run chatlens parse data/raw/chat.txt --anonymize
+uv run pytest    # parse/stats tests do not need Ollama
 ```
 
-## Privacy e disclaimer
-- Tutto gira offline tranne le chiamate a Ollama su `localhost`.
-- La sezione **stile comunicativo** del report è **esplorativa e non diagnostica**: va presa
-  come spunto, non come verdetto su una persona reale.
+## Stack
 
-## Sviluppo
-```bash
-uv run pytest        # test (parse/stats non richiedono Ollama)
-```
-Architettura: il **deterministico** (conteggi) è separato dall'**LLM** (semantica). Vedi
-`CLAUDE.md`.
+Python · Ollama (local LLMs) · pandas/Parquet · uv
+
+## License
+
+MIT, see [LICENSE](LICENSE).
